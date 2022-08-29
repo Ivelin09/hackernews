@@ -14,7 +14,10 @@ app.use(cors());
 app.post('/register', (req, res) => {
     console.log("THERE", req.body);
 
-    res.json({token: crypto.randomBytes(48).toString('hex')});
+    res.json({
+        message: "success",
+        token: crypto.randomBytes(48).toString('hex')
+    });
 });
 
 
