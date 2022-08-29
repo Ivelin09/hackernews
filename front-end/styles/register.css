@@ -1,0 +1,22 @@
+body {
+    margin: 5%;
+    text-align: center;
+}
+
+.block form label {
+    margin: 2% 2% 2% 2%;
+    display: block;
+}
+
+label {
+    font-size: 30px;
+}
+
+input {
+    width: 45%;
+    height: 35px;
+}
+
+.block button {
+    margin: 2%;
+}
