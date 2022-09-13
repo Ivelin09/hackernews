@@ -1,4 +1,4 @@
-import { Button, TextField, Box, ThemeProvider } from '@mui/material'
+import { Button } from '@mui/material'
 import React, { useState } from 'react';
 
 export default function Home() {
@@ -7,11 +7,9 @@ export default function Home() {
       event.preventDefault();
 
       const data = {
-        first: event.target.first.value,
-        last: event.target.last.value
+        username: event.target.username.value,
+        password: event.target.password.value
       };
-
-      console.log(JSON.stringify(data));
 
       const response = await fetch("/api/register", {
         method: 'POST',
@@ -26,12 +24,12 @@ export default function Home() {
     return (
       <div className="block">
           <form onSubmit={handleSubmit}>
-              {message ? <p>{message}</p> : ""}
-              <label htmlFor="first">First Name</label>
-              <input type="text" id="first" name="first" variant="outlined" required />
+              {message ? <p className="message">{message}</p> : ""}
+              <label htmlFor="first">Username</label>
+              <input type="text" id="username" name="username" variant="outlined" required />
 
-              <label htmlFor="last">Last Name</label>
-              <input type="text" id="last" name="last" variant="outlined" required />
+              <label htmlFor="last">Password</label>
+              <input type="text" id="password" name="password" variant="outlined" required />
 
               <div>
                 <Button className="btn" type="submit" variant="outlined">Submit</Button>

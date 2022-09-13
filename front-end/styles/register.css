@@ -1,5 +1,5 @@
 body {
-    margin: 5%;
+    margin: 4%;
     text-align: center;
 }
 
@@ -19,4 +19,24 @@ input {
 
 .block button {
     margin: 2%;
+}
+
+.success {
+    font-size: 50px;
+    color: green;
+    border: 3px double green;
+    display: inline;
+    padding: 1% 2% 1% 2%;
+}
+
+.failure {
+    font-size: 50px;
+    color: #eb3434;
+    border: 3px double #eb3434;
+    display: inline;
+    padding: 1% 2% 1% 2%;
+}
+
+input {
+    margin: 1.5%;
 }
