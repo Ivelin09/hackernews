@@ -9,15 +9,19 @@ const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
 const jwt = require("jsonwebtoken");
 
-app.use(cookieParser("secret"));
+const authorization = require('./auth');
 
-const { User, Friend, STATUS } = require('./userSchema');
+const { User, Friend, Blog, STATUS } = require('./userSchema');
 mongoose.connect('mongodb://localhost:27017/test');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
+
+
+app.use(cookieParser("secret"));
+
 
 app.post('/register', async (req, res) => {
     console.log("THERE", req.body);
@@ -61,35 +65,32 @@ app.post('/login', async (req, res) => {
     console.log(query);
 });
 
-app.post('/friendRequest', async (req, res) => {
-    const senderName = jwt.verify(req.cookies.authorization, 'secret').username;
+app.post('/friendRequest', authorization, async (req, res) => {
     const { recipientName } = req.body;
-
-    console.log("BODY", senderName, recipientName );
-
-    const senderObj = await User.findOne({ username: senderName });
     const recipientObj = await User.findOne({ username: recipientName });
 
-    console.log("senderObj", senderObj);
+    if(!recipientObj) {
+        console.log("hereee");
+        res.json({ status: 400, message: "couldn't find such username"});
+        return;
+    }
+
     console.log("recipientObj", recipientObj);
 
     const docA = await Friend.findOneAndUpdate(
-        { requester: senderObj, recipient: recipientObj },
+        { requester: req.sender, recipient: recipientObj },
         { $set: {status: STATUS.requested }},
         { upsert: true, new: true }
     );
 
     const docB = await Friend.findOneAndUpdate(
-        {requester: senderObj, recipient: recipientObj},
+        {requester: req.sender, recipient: recipientObj},
         { $set: { status: STATUS.pending }},
         { upsert: true, new: true }
     );
 
-    console.log("docA", docA);
-    console.log("docB", docB);
-
     const updateSender = await User.findOneAndUpdate(
-        { _id: senderObj },
+        { _id: req.sender },
         { $push: { friends: docA._id }}
     );
 
@@ -102,6 +103,20 @@ app.post('/friendRequest', async (req, res) => {
     console.log("updateRecipient", updateRecipient);
 
     res.send(200);
+});
+
+app.post('/createBlog', authorization, async (req, res) => {
+    const { title, description } = req.body;
+
+    const blog = new Blog();
+
+    blog.title = title;
+    blog.description = description;
+    blog.author = req.sender;
+
+    await blog.save();
+
+    res.sendStatus(200);
 });
 
 

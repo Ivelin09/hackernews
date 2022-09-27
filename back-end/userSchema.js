@@ -32,7 +32,23 @@ const userSchema = new Schema({
     friends: [{ type: Schema.Types.ObjectId, ref: 'Friends' }]
 });
 
+const blogSchema = new Schema({
+    title: {
+        type: String,
+        required: true
+    },
+    description: {
+        type: String,
+        required: true
+    },
+    author: {
+        type: Schema.Types.ObjectId, 
+        ref: 'Users'
+    }
+})
+
 const User = mongoose.model('Users', userSchema);
 const Friend = mongoose.model('Friends', friendsSchema);
+const Blog = mongoose.model('Blog', blogSchema);
 
-module.exports = { User, Friend, STATUS };
+module.exports = { User, Friend, Blog, STATUS };
