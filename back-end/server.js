@@ -119,6 +119,30 @@ app.post('/createBlog', authorization, async (req, res) => {
     res.sendStatus(200);
 });
 
+app.post('/blogs', async (req, res) => { 
+    console.log("here");
+    const data = [];
+     Blog.find({}, (err, blogs) => {
+
+        blogs.map(async (blog) => {
+            console.log("author", (await User.findOne({_id: blog.author})).username);
+            data.push({
+                title: blog.title,
+                author: (await User.findOne({_id: blog.author})).username
+            });
+
+            console.log(data);
+        })
+
+        console.log("array", data);
+
+        res.json({
+            status: 200,
+            blogs: data
+        });
+    })
+    
+});
 
 app.listen(8000, () => {
     console.log("Server is on");
