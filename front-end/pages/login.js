@@ -6,7 +6,7 @@ export default function loginPage() {
     const [isSuccess, setStatus] = useState();
     const handleSubmit = async (event) => {
         event.preventDefault();
-        console.log("ASDWAD")        
+
         const data = {
             username: event.target.username.value,
             password: event.target.password.value

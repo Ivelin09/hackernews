@@ -7,6 +7,7 @@ export default async function authHandler(endpoint, req, res) {
         headers: {
             "Content-Type": "application/json"
           },
+        credentials: 'include',
         body: JSON.stringify(req.body)
     }).then((res) => res.json());
 
@@ -16,7 +17,7 @@ export default async function authHandler(endpoint, req, res) {
     cookies.set("authorization", response.token, {
         httpOnly: true,
         sameSite: "lax",
-        maxAge: 100000000000
+        maxAge: 1000*60*60*24
     });
     res.status(200).json(response);
 

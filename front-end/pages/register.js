@@ -16,7 +16,8 @@ export default function Home() {
         body: JSON.stringify(data),
         headers: {
           "Content-Type": "application/json"
-        }
+        },
+        credentials: 'include'
       }).then((res) => res.json());
 
       setMessage(response.message);
