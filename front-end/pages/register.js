@@ -1,5 +1,6 @@
 import { Button } from '@mui/material'
 import React, { useState } from 'react';
+import Head from 'next/head';
 
 export default function Home() {
   const [message, setMessage] = useState();
@@ -24,6 +25,9 @@ export default function Home() {
     }
     return (
       <div className="block">
+          <Head>
+            <link rel="stylesheet" href="/register.css"></link>
+          </Head>
           <form onSubmit={handleSubmit}>
               {message ? <p className="message">{message}</p> : ""}
               <label htmlFor="first">Username</label>

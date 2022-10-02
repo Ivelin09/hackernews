@@ -1,6 +1,7 @@
 import Cookies from "cookies";
 import { useState, useEffect } from 'react'
-import useFriendRequest from "../hooks/useFriendRequest";
+import useRequest from "../hooks/useFriendRequest";
+import Head from "next/head";
 
 export default function homePage({ token }) {
   const [username, setUsername] = useState("");
@@ -9,11 +10,10 @@ export default function homePage({ token }) {
 
   const [message, setMessage] = useState("");
 
-  const { sendFriendRequest } = useFriendRequest({ recipientName: username });
-  console.log(typeof sendFriendRequest)
-
+  const { sendRequest } = useRequest({ recipientName: username });
+  
   const handleSubmit = async (event) => {
-    const response = await sendFriendRequest();
+    const response = await sendRequest();
     setMessage(response.message);
     console.log("res", response);
   }
@@ -23,6 +23,9 @@ export default function homePage({ token }) {
 
   return (
     <div className="" color="color: black">
+          <Head>
+            <link rel="stylesheet" href="/friends.css"></link>
+          </Head>
 
       <div className="container">
         <div className="item-1">

@@ -1,0 +1,42 @@
+body {
+    margin: 0%;
+    text-align: center;
+}
+
+.block form label {
+    margin: 2% 2% 2% 2%;
+    display: block;
+}
+
+label {
+    font-size: 30px;
+}
+
+input {
+    width: 45%;
+    height: 35px;
+}
+
+.block button {
+    margin: 2%;
+}
+
+.success {
+    font-size: 50px;
+    color: green;
+    border: 3px double green;
+    display: inline;
+    padding: 1% 2% 1% 2%;
+}
+
+.failure {
+    font-size: 50px;
+    color: #eb3434;
+    border: 3px double #eb3434;
+    display: inline;
+    padding: 1% 2% 1% 2%;
+}
+
+input {
+    margin: 1.5%;
+}

@@ -1,5 +1,5 @@
-const useFriendRequest = (body) => {
-    const sendFriendRequest = async () => { 
+const useRequest = (body) => {
+    const sendRequest = async () => { 
         console.log("given body", body);
         try {
             console.log(process.env.BACK_END);
@@ -25,7 +25,7 @@ const useFriendRequest = (body) => {
         }
     }
 
-    return { sendFriendRequest }
+    return { sendRequest }
 }
 
-export default useFriendRequest;
+export default useRequest;

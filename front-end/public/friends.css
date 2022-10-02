@@ -1,0 +1,50 @@
+body {
+    text-align: center;
+}
+
+input {
+    font-size: 25px;
+    width: 80%;
+    height: 30%;
+}
+
+div {
+    margin: 2%;
+}
+
+h1 {
+    font-size: 200%;
+}
+
+h2 {
+    padding: 3%;
+    border-bottom: 1px solid black;
+}
+
+button {
+    margin: 4%;
+    width: 20%;
+    height: 35px;
+}
+
+.container {
+    font-family: monospace;
+    display: flex;
+}
+
+.item-1 {
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    flex: 3;
+    order: 2;
+}
+
+.item-2 {
+    flex: 1;
+    order: 2;
+}
+
+.item-3 {
+    flex: 1;
+    order: 1;
+}

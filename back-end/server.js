@@ -75,6 +75,13 @@ app.post('/friendRequest', authorization, async (req, res) => {
         return;
     }
 
+    const match = await User.findOne({requester: req.sender, recipient: recipientObj});
+
+    if(match) {
+        res.json({status: 400, message: "Request already sended"});
+        return;
+    }
+
     console.log("recipientObj", recipientObj);
 
     const docA = await Friend.findOneAndUpdate(
