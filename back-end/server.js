@@ -1,7 +1,11 @@
-const express = require('express')
+const express = require('express');
+const http = require('http');
+
 const app = express();
 
 const cors = require('cors');
+app.use(cors());
+
 const bodyParser = require('body-parser');
 
 const cookieParser = require('cookie-parser');
@@ -11,16 +15,27 @@ const jwt = require("jsonwebtoken");
 
 const authorization = require('./auth');
 
+const server = http.createServer(app);
+const io = require('socket.io')(server, {
+    cors: {
+        origin: "http://localhost:3000"
+    }
+});
+
+io.on("connection", (data) => {
+    console.log("connected", data);
+});
+
 const { User, Friend, Blog, STATUS } = require('./userSchema');
 mongoose.connect('mongodb://localhost:27017/test');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
-
 
 app.use(cookieParser("secret"));
+
+
 
 
 app.post('/register', async (req, res) => {
@@ -112,6 +127,22 @@ app.post('/friendRequest', authorization, async (req, res) => {
     res.send(200);
 });
 
+app.get("/friends", authorization, async (req, res) => {
+    const data = [];
+    Friend.find({}, async (err, friends) => {
+
+        await Promise.all(friends.map(async (friend) => {
+            data.push(friend.username);
+        }));
+
+        res.json({
+            status: 200,
+            friends: data
+        })
+    });
+
+});
+
 app.post('/createBlog', authorization, async (req, res) => {
     const { title, description } = req.body;
 
@@ -124,20 +155,17 @@ app.post('/createBlog', authorization, async (req, res) => {
     await blog.save();
 
     res.sendStatus(200);
-});
+})
 
-app.post('/blogs', async (req, res) => { 
+app.post('/blogs', async (req, res) => {
     const data = [];
      Blog.find({}, async (err, blogs) => {
 
         await Promise.all(blogs.map(async (blog) => {
-            console.log("author", (await User.findOne({_id: blog.author})).username);
             data.push({
                 title: blog.title,
                 author: (await User.findOne({_id: blog.author})).username
             });
-
-            console.log(data);
         }));
 
         res.json({
@@ -147,6 +175,7 @@ app.post('/blogs', async (req, res) => {
     })
     
 });
-app.listen(8000, () => {
+
+server.listen(8000, () => {
     console.log("Server is on");
 })
