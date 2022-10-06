@@ -22,11 +22,24 @@ const io = require('socket.io')(server, {
     }
 });
 
-io.on("connection", (data) => {
-    console.log("connected", data);
+const map = new Map();
+
+io.on("connection", (socket) => {
+    socket.on('connection', (data) => map[data] = socket.id);
+    socket.on('send-request', async (username) => {
+        const userId = (await User.findOne({ username }))._id;
+        console.log("server", userId);
+        if(map.has(userId)) {
+            console.log("here");
+            socket.broadcast.to(map[userId]).emit("send", "new friend request");
+
+        }
+        socket.broadcast.emit("send", "just a test");
+    });
 });
 
 const { User, Friend, Blog, STATUS } = require('./userSchema');
+const { Socket } = require('socket.io');
 mongoose.connect('mongodb://localhost:27017/test');
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -34,9 +47,6 @@ app.use(bodyParser.json());
 
 
 app.use(cookieParser("secret"));
-
-
-
 
 app.post('/register', async (req, res) => {
     console.log("THERE", req.body);
@@ -51,13 +61,6 @@ app.post('/register', async (req, res) => {
 
     doc.save().then(() => console.log("saved"));
     console.log(doc);
-    /*res.cookie("authorization", token, {  
-        httpOnly: true,
-        signed: true,
-        secure: true,
-        sameSite:'none',
-    });*/
-
     res.json({
         message: "success",
         token: token //crypto.randomBytes(48).toString('hex')
@@ -75,24 +78,30 @@ app.post('/login', async (req, res) => {
     else
         res.json({ 
             message: 'success',
-            token: await jwt.sign({username: username}, 'secret', {expiresIn: 5000 }), 
-            code: 200 })
+            token: await jwt.sign({username: username}, 'secret', {expiresIn: 1000*60*30 }), 
+            code: 200 });
     console.log(query);
 });
 
 app.post('/friendRequest', authorization, async (req, res) => {
     const { recipientName } = req.body;
     const recipientObj = await User.findOne({ username: recipientName });
-
+    console.log(recipientObj, req.sender);
     if(!recipientObj) {
         console.log("hereee");
         res.json({ status: 400, message: "couldn't find such username"});
         return;
     }
 
-    const match = await User.findOne({requester: req.sender, recipient: recipientObj});
+    if(map.has(recipientObj._id)) {
+        console.log("QUESTIONNNNNN??????");
+        io.to(map[recipientObj._id]).emit("send", "here");
+    }
+
+    const match = await Friend.findOne({requester: req.sender, recipient: recipientObj});
 
     if(match) {
+        console.log("match", match);
         res.json({status: 400, message: "Request already sended"});
         return;
     }
@@ -100,22 +109,25 @@ app.post('/friendRequest', authorization, async (req, res) => {
     console.log("recipientObj", recipientObj);
 
     const docA = await Friend.findOneAndUpdate(
-        { requester: req.sender, recipient: recipientObj },
+        { requester: req.sender._id, recipient: recipientObj._id },
         { $set: {status: STATUS.requested }},
         { upsert: true, new: true }
     );
 
+    console.log("here");
     const docB = await Friend.findOneAndUpdate(
         {requester: req.sender, recipient: recipientObj},
         { $set: { status: STATUS.pending }},
         { upsert: true, new: true }
     );
 
+    console.log("here1");
     const updateSender = await User.findOneAndUpdate(
         { _id: req.sender },
         { $push: { friends: docA._id }}
     );
 
+    console.log("here2");
     const updateRecipient = await User.findOneAndUpdate(
         { _id: recipientObj },
         { $push: { friends: docB._id }}
@@ -124,7 +136,18 @@ app.post('/friendRequest', authorization, async (req, res) => {
     console.log("updateSender", updateSender);
     console.log("updateRecipient", updateRecipient);
 
-    res.send(200);
+    res.json({
+        status: 200,
+        message: "hello"
+    });
+});
+
+app.get('/userId', authorization, async (req ,res) => {
+
+    res.json({
+        status: 200,
+        message: req.sender._id.toString()
+    })
 });
 
 app.get("/friends", authorization, async (req, res) => {
