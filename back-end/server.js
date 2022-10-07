@@ -25,14 +25,14 @@ const io = require('socket.io')(server, {
 const map = new Map();
 
 io.on("connection", (socket) => {
-    socket.on('connection', (data) => map[data] = socket.id);
+    socket.on('connection', (data) => map.set(data, socket.id));
     socket.on('send-request', async (username) => {
-        const userId = (await User.findOne({ username }))._id;
-        console.log("server", userId);
-        if(map.has(userId)) {
+        const userId = (await User.findOne({ username }))._id.toString();
+        if(map.has(userId.toString())) {
             console.log("here");
-            socket.broadcast.to(map[userId]).emit("send", "new friend request");
-
+            socket.to(map.get(userId)).emit("send", "new friend request");
+            io.to(map.get(userId)).emit("send", "hello");
+            socket.broadcast.to(map.get(userId)).emit("send", "hello");
         }
         socket.broadcast.emit("send", "just a test");
     });
@@ -93,9 +93,9 @@ app.post('/friendRequest', authorization, async (req, res) => {
         return;
     }
 
-    if(map.has(recipientObj._id)) {
+    if(map.has(recipientObj._id.toString())) {
         console.log("QUESTIONNNNNN??????");
-        io.to(map[recipientObj._id]).emit("send", "here");
+        io.to(map.get(recipientObj._id.toString())).emit("send", "here11111");
     }
 
     const match = await Friend.findOne({requester: req.sender, recipient: recipientObj});
@@ -106,6 +106,7 @@ app.post('/friendRequest', authorization, async (req, res) => {
         return;
     }
 
+    console.log("sender", req.sender);
     console.log("recipientObj", recipientObj);
 
     const docA = await Friend.findOneAndUpdate(
