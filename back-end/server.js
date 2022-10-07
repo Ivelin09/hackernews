@@ -26,20 +26,11 @@ const map = new Map();
 
 io.on("connection", (socket) => {
     socket.on('connection', (data) => map.set(data, socket.id));
-    socket.on('send-request', async (username) => {
-        const userId = (await User.findOne({ username }))._id.toString();
-        if(map.has(userId.toString())) {
-            console.log("here");
-            socket.to(map.get(userId)).emit("send", "new friend request");
-            io.to(map.get(userId)).emit("send", "hello");
-            socket.broadcast.to(map.get(userId)).emit("send", "hello");
-        }
-        socket.broadcast.emit("send", "just a test");
-    });
 });
 
 const { User, Friend, Blog, STATUS } = require('./userSchema');
 const { Socket } = require('socket.io');
+const auth = require('./auth');
 mongoose.connect('mongodb://localhost:27017/test');
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -93,9 +84,9 @@ app.post('/friendRequest', authorization, async (req, res) => {
         return;
     }
 
-    if(map.has(recipientObj._id.toString())) {
-        console.log("QUESTIONNNNNN??????");
-        io.to(map.get(recipientObj._id.toString())).emit("send", "here11111");
+    const recipientId = recipientObj._id.toString(); 
+    if(map.has(recipientId)) {
+        io.to(map.get(recipientId)).emit("send", req.sender);
     }
 
     const match = await Friend.findOne({requester: req.sender, recipient: recipientObj});
@@ -151,17 +142,39 @@ app.get('/userId', authorization, async (req ,res) => {
     })
 });
 
+app.get('/pending', authorization, async (req, res) => {
+    const data = [];
+    Friend.find({}, async (err, friends) => {
+
+        await Promise.all(friends.map(async (friend) => {
+            console.log("watch", friend.recipient, req.sender._id);
+            if(friend.recipient.toString() == req.sender._id.toString())
+            if(friend.status == STATUS.pending) {
+                const id = friend.requester;
+                data.push((await User.findOne({ id })).username);
+            }
+        }));
+        console.log("data", data);
+        res.json({
+            status: 200,
+            message: data
+        })
+    });
+})
+
 app.get("/friends", authorization, async (req, res) => {
     const data = [];
     Friend.find({}, async (err, friends) => {
 
         await Promise.all(friends.map(async (friend) => {
-            data.push(friend.username);
+            console.log("fr", friend);
+            if(friend.status == STATUS.friends)
+                data.push(friend.username);
         }));
 
         res.json({
             status: 200,
-            friends: data
+            message: data
         })
     });
 
