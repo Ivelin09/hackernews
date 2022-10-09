@@ -11,7 +11,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 
 const mongoose = require('mongoose');
-const jwt = require("jsonwebtoken");
+const jwt = require("jsonwebtoken")
 
 const authorization = require('./auth');
 
@@ -74,6 +74,7 @@ app.post('/login', async (req, res) => {
     console.log(query);
 });
 
+let i = 0;
 app.post('/friendRequest', authorization, async (req, res) => {
     const { recipientName } = req.body;
     const recipientObj = await User.findOne({ username: recipientName });
@@ -84,10 +85,16 @@ app.post('/friendRequest', authorization, async (req, res) => {
         return;
     }
 
-    const recipientId = recipientObj._id.toString(); 
-    if(map.has(recipientId)) {
-        io.to(map.get(recipientId)).emit("send", req.sender);
+    console.log("vednuj li vliash");
+    i++;
+    if(i == 1) {
+        console.log("da");
+    } else {
+        console.log("ne");
     }
+    const recipientId = recipientObj._id.toString(); 
+    if(map.has(recipientId))
+        io.to(map.get(recipientId)).emit("send", req.sender);
 
     const match = await Friend.findOne({requester: req.sender, recipient: recipientObj});
 
@@ -134,6 +141,25 @@ app.post('/friendRequest', authorization, async (req, res) => {
     });
 });
 
+app.post("/acceptFriendRequest", authorization, async (req,res) => {
+    const { requester } = req.body;
+    const recipientObj = await User.findOne({ _id: req.sender._id.toString() });
+    const requesterObj = await User.findOne({ _id: requester });
+
+    const obj = await Friend.findOneAndUpdate({
+        $and: [
+            { recipient: recipientObj._id.toString() },
+            { requester: requesterObj._id.toString() }
+        ]
+    },
+    {
+        $set: {
+            status: STATUS.friends
+        }
+    });
+    
+});
+
 app.get('/userId', authorization, async (req ,res) => {
 
     res.json({
@@ -150,8 +176,10 @@ app.get('/pending', authorization, async (req, res) => {
             console.log("watch", friend.recipient, req.sender._id);
             if(friend.recipient.toString() == req.sender._id.toString())
             if(friend.status == STATUS.pending) {
-                const id = friend.requester;
-                data.push((await User.findOne({ id })).username);
+                const aaaa = friend.requester.toString();
+                const query = (await User.findOne({_id: aaaa})).username;
+                data.push(query);
+            
             }
         }));
         console.log("data", data);
