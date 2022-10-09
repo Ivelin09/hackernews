@@ -2,24 +2,76 @@ import Cookies from "cookies";
 import { useState, useEffect } from 'react'
 import useRequest from "../hooks/useFriendRequest";
 import Head from "next/head";
+import {io} from "socket.io-client";
 
 export default function homePage({ token }) {
   const [username, setUsername] = useState("");
   const [friendList, setFriend] = useState([]);
-  const [requestList, setRequest] = useState([]);
+  const [requestList, setPending] = useState([]);
 
+  console.log("req", requestList);
   const [message, setMessage] = useState("");
 
-  const { sendRequest } = useRequest({ recipientName: username });
+  const { sendFriendRequest, acceptFriendRequest } = useRequest();
   
   const handleSubmit = async (event) => {
-    const response = await sendRequest();
+    event.preventDefault();
+    const response = await sendFriendRequest({ recipientName: username });
     setMessage(response.message);
     console.log("res", response);
+
   }
+
+  useEffect(() => {
+    const socket = io("http://localhost:8000");
+    console.log("asd");
+    const connect = async () => {
+      const res = await fetch("api/userId", {
+        method: 'GET'
+      }).then((res) => res.json());
+      console.log(res);
+
+      socket.emit('connection', res.message);
+    }
+
+    const fetchFriends = async () => {
+      const res = await fetch("api/friends", {
+        method: 'GET'
+      }).then((res) => res.json());
+
+      setFriend(res.message);
+    }
+
+    const fetchPending = async () => {
+      const res = await fetch("api/pending", {
+        method: 'GET'
+      }).then((res) => res.json());
+      console.log("pending", res);
+      setPending(res.message);
+    }
+
+    socket.on('receive-request', (data) => {
+      console.log("lookout", requestList, data.username);
+     setPending(state => [...state, data.username]);
+    })
+
+    socket.on('friend-update', (data) => {
+      setFriend(state => [...state, data.username]);
+    });
+  
+    console.log("problem");
+    
+    connect();
+    fetchFriends();
+    fetchPending();
+
+    
+  }, []);
+
   const onChange = (event) => {
     setUsername(event.target.value);
   }
+
 
   return (
     <div className="" color="color: black">
@@ -38,11 +90,11 @@ export default function homePage({ token }) {
         </div>
         <div className="item-2">
           <h2>friends</h2>
-            {friendList.map(item => <p key={item}>{item}</p>)}
+            {friendList.map((item, idx) => <p key={idx}>{item}</p>)}
         </div>
         <div className="item-3">
           <h2> pending </h2>
-          {requestList.map(item => <p key={item} onClick={() => acceptFriendRequest(item)}>{item}</p>)}
+          {requestList.map((username, idx) => <p key={idx} onClick={() => { acceptFriendRequest(username); setFriend(state => [...state, username]) }}>{username}</p>)}
         </div>
       </div>
       

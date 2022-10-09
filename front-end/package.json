@@ -17,9 +17,12 @@
     "http-proxy": "^1.18.1",
     "http-proxy-middleware": "^2.0.6",
     "my-react": "npm:react@^18.2.0",
+    "net": "^1.0.2",
     "next": "^12.2.5",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "socket.io-client": "^4.5.2",
+    "webpack": "^5.74.0"
   },
   "devDependencies": {
     "eslint": "8.22.0",

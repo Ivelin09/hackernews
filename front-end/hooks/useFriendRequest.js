@@ -1,5 +1,7 @@
-const useRequest = (body) => {
-    const sendRequest = async () => { 
+import { useEffect } from 'react'
+
+const useRequest = () => {
+    const sendFriendRequest = async (body) => { 
         console.log("given body", body);
         try {
             console.log(process.env.BACK_END);
@@ -19,13 +21,26 @@ const useRequest = (body) => {
             
             return response
         } catch(err)  {
-            console.log("DELFINNNNNNNNNNNNNNNN", err.message);
+            console.log("DELFINNNNNNNNNNNNNNNN", err);
             
-            return JSON.parse(err.message);
+            return err;
         }
     }
 
-    return { sendRequest }
+    const acceptFriendRequest = async (username) => {
+        console.log("send");
+        const response = await fetch("api/acceptFriendRequest", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ requester: username })
+        });
+
+        return response;
+    }
+
+    return { sendFriendRequest, acceptFriendRequest }
 }
 
 export default useRequest;

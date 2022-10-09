@@ -10,7 +10,7 @@ const apiProxy = createProxyMiddleware({
     const cookies = new Cookies(req); 
     const accessToken = cookies.get("authorization");
 
-    console.log("token", accessToken);
+    console.log("token1", accessToken);
     
     if (accessToken) {
       proxyReq.setHeader("Authorization", `Bearer ${accessToken}`);

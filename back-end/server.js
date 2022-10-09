@@ -94,7 +94,7 @@ app.post('/friendRequest', authorization, async (req, res) => {
     }
     const recipientId = recipientObj._id.toString(); 
     if(map.has(recipientId))
-        io.to(map.get(recipientId)).emit("send", req.sender);
+        io.to(map.get(recipientId)).emit("receive-request", req.sender);
 
     const match = await Friend.findOne({requester: req.sender, recipient: recipientObj});
 
@@ -141,10 +141,14 @@ app.post('/friendRequest', authorization, async (req, res) => {
     });
 });
 
+// ?? TODO fix names
 app.post("/acceptFriendRequest", authorization, async (req,res) => {
     console.log("here", req.body);
     const { requester } = req.body;
     const requesterObj = await User.findOne({ username: requester });
+
+    if(map.has(requesterObj._id.toString()))
+        io.to(map.get(requesterObj._id.toString())).emit('friend-update', req.sender);
 
     console.log(req.sender._id.toString(), requesterObj._id.toString());
     const obj = await Friend.findOneAndUpdate({
@@ -203,9 +207,9 @@ app.get("/friends", authorization, async (req, res) => {
             console.log(friend.status, STATUS.friends);
             if(friend.status == STATUS.friends)
                 if(friend.recipient.toString() == req.sender._id.toString())
-                        data.push((await User.findOne({_id: friend.recipient})).username);
+                        data.push((await User.findOne({_id: friend.requester})).username);
                 else if(friend.requester.toString() == req.sender._id.toString())
-                    data.push((await User.findOne({_id: friend.requester})).username);
+                    data.push((await User.findOne({_id: friend.recipient})).username);
             })
         );
 
