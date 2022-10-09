@@ -61,7 +61,7 @@ app.post('/register', async (req, res) => {
 app.post('/login', async (req, res) => {
     const {username, password} = req.body;
 
-    const query = await User.findOne({ username });
+    const query = await User.findOne({ username: username });
     console.log(query);
 
     if(!query || query.password != password)
@@ -142,13 +142,14 @@ app.post('/friendRequest', authorization, async (req, res) => {
 });
 
 app.post("/acceptFriendRequest", authorization, async (req,res) => {
+    console.log("here", req.body);
     const { requester } = req.body;
-    const recipientObj = await User.findOne({ _id: req.sender._id.toString() });
-    const requesterObj = await User.findOne({ _id: requester });
+    const requesterObj = await User.findOne({ username: requester });
 
+    console.log(req.sender._id.toString(), requesterObj._id.toString());
     const obj = await Friend.findOneAndUpdate({
         $and: [
-            { recipient: recipientObj._id.toString() },
+            { recipient: req.sender._id.toString() },
             { requester: requesterObj._id.toString() }
         ]
     },
@@ -158,6 +159,8 @@ app.post("/acceptFriendRequest", authorization, async (req,res) => {
         }
     });
     
+    console.log(obj);
+    res.sendStatus(200);
 });
 
 app.get('/userId', authorization, async (req ,res) => {
@@ -175,12 +178,12 @@ app.get('/pending', authorization, async (req, res) => {
         await Promise.all(friends.map(async (friend) => {
             console.log("watch", friend.recipient, req.sender._id);
             if(friend.recipient.toString() == req.sender._id.toString())
-            if(friend.status == STATUS.pending) {
-                const aaaa = friend.requester.toString();
-                const query = (await User.findOne({_id: aaaa})).username;
-                data.push(query);
-            
-            }
+                if(friend.status == STATUS.pending) {
+                    const pending = friend.requester.toString();
+                    const query = (await User.findOne({_id: pending})).username;
+                    data.push(query);
+                
+                }
         }));
         console.log("data", data);
         res.json({
@@ -195,10 +198,16 @@ app.get("/friends", authorization, async (req, res) => {
     Friend.find({}, async (err, friends) => {
 
         await Promise.all(friends.map(async (friend) => {
-            console.log("fr", friend);
+            console.log(friend.recipient.toString(), req.sender._id.toString());
+            console.log(friend.requester.toString(), req.sender._id.toString());
+            console.log(friend.status, STATUS.friends);
             if(friend.status == STATUS.friends)
-                data.push(friend.username);
-        }));
+                if(friend.recipient.toString() == req.sender._id.toString())
+                        data.push((await User.findOne({_id: friend.recipient})).username);
+                else if(friend.requester.toString() == req.sender._id.toString())
+                    data.push((await User.findOne({_id: friend.requester})).username);
+            })
+        );
 
         res.json({
             status: 200,
