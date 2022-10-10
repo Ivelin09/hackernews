@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Page({ blogs }) {
     return (
         <div>
@@ -8,7 +10,7 @@ export default function Page({ blogs }) {
                 {blogs.map((blog, idx) =>  {
                     return (
                     <div className="article">
-                        <h1  key={idx}>{blog.title}</h1>
+                        <Link href="/post" key={idx}>{blog.title}</Link>
                         <p key={idx}>Author: {blog.author}</p>
                     </div>
                     )
