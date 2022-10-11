@@ -1,8 +1,12 @@
 import Link from "next/link";
+import Head from 'next/head';
 
 export default function Page({ blogs }) {
     return (
         <div>
+            <Head>
+            <link rel="stylesheet" href="/blogs.css"></link>
+            </Head>
             <div className="header">
                 <a href="/createBlog">Create blog</a> 
             </div>
@@ -10,7 +14,7 @@ export default function Page({ blogs }) {
                 {blogs.map((blog, idx) =>  {
                     return (
                     <div className="article">
-                        <Link href="/post" key={idx}>{blog.title}</Link>
+                        <Link href={`/blog/post?id=${blog.id}`} key={idx}>{blog.title}</Link>
                         <p key={idx}>Author: {blog.author}</p>
                     </div>
                     )
@@ -31,6 +35,7 @@ export async function getServerSideProps() {
             console.log("data", data);
             blogs = data.blogs;
     });    
+    console.log(blogs);
     
     return {
         props: {

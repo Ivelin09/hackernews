@@ -28,7 +28,7 @@ io.on("connection", (socket) => {
     socket.on('connection', (data) => map.set(data, socket.id));
 });
 
-const { User, Friend, Blog, STATUS } = require('./userSchema');
+const { User, Friend, Blogs, STATUS } = require('./userSchema');
 const { Socket } = require('socket.io');
 const auth = require('./auth');
 mongoose.connect('mongodb://localhost:27017/test');
@@ -74,7 +74,6 @@ app.post('/login', async (req, res) => {
     console.log(query);
 });
 
-let i = 0;
 app.post('/friendRequest', authorization, async (req, res) => {
     const { recipientName } = req.body;
     const recipientObj = await User.findOne({ username: recipientName });
@@ -85,13 +84,6 @@ app.post('/friendRequest', authorization, async (req, res) => {
         return;
     }
 
-    console.log("vednuj li vliash");
-    i++;
-    if(i == 1) {
-        console.log("da");
-    } else {
-        console.log("ne");
-    }
     const recipientId = recipientObj._id.toString(); 
     if(map.has(recipientId))
         io.to(map.get(recipientId)).emit("receive-request", req.sender);
@@ -224,7 +216,7 @@ app.get("/friends", authorization, async (req, res) => {
 app.post('/createBlog', authorization, async (req, res) => {
     const { title, description } = req.body;
 
-    const blog = new Blog();
+    const blog = new Blogs();
 
     blog.title = title;
     blog.description = description;
@@ -235,14 +227,25 @@ app.post('/createBlog', authorization, async (req, res) => {
     res.sendStatus(200);
 })
 
+app.post('/blog', async (req, res) => {
+    const { blogId } = req.body; 
+    const blog = await Blogs.findOne({ blogId });
+
+    res.json({
+        status: 200,
+        message: blog
+    })
+})
+
 app.post('/blogs', async (req, res) => {
     const data = [];
-     Blog.find({}, async (err, blogs) => {
+     Blogs.find({}, async (err, blogs) => {
 
         await Promise.all(blogs.map(async (blog) => {
             data.push({
                 title: blog.title,
-                author: (await User.findOne({_id: blog.author})).username
+                id: blog._id,
+                author: (await User.findOne({_id: blog.author})).username,
             });
         }));
 

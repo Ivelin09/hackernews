@@ -49,6 +49,6 @@ const blogSchema = new Schema({
 
 const User = mongoose.model('Users', userSchema);
 const Friend = mongoose.model('Friends', friendsSchema);
-const Blog = mongoose.model('Blog', blogSchema);
+const Blogs = mongoose.model('Blog', blogSchema);
 
-module.exports = { User, Friend, Blog, STATUS };
+module.exports = { User, Friend, Blogs, STATUS };

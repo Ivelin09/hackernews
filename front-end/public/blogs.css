@@ -1,11 +1,16 @@
+body {
+    justify-content: center;
+}
+
 .article {
     border: 2px solid black;
     margin: 1%;
-    padding: 0%;
+    padding: 0.6%;
     transition: 0.15s;
+    text-align: center;
 }
 
-.article h1:hover {
+.article a:hover {
     text-shadow: 0 0 3px #FF0000;
 }
 
@@ -16,6 +21,8 @@
     font-size: 32px;
 }
 a {
+    color: black;
+    font-size: 40px;
     text-decoration: none;
     text-transform: none;
 }
