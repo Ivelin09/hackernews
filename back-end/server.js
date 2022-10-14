@@ -14,6 +14,7 @@ const mongoose = require('mongoose');
 const jwt = require("jsonwebtoken")
 
 const authorization = require('./auth');
+const url = require('url');
 
 const server = http.createServer(app);
 const io = require('socket.io')(server, {
@@ -28,7 +29,7 @@ io.on("connection", (socket) => {
     socket.on('connection', (data) => map.set(data, socket.id));
 });
 
-const { User, Friend, Blogs, STATUS } = require('./userSchema');
+const { User, Comment, Friend, Blogs, STATUS } = require('./userSchema');
 const { Socket } = require('socket.io');
 const auth = require('./auth');
 mongoose.connect('mongodb://localhost:27017/test');
@@ -229,13 +230,50 @@ app.post('/createBlog', authorization, async (req, res) => {
 
 app.post('/blog', async (req, res) => {
     const { blogId } = req.body; 
-    const blog = await Blogs.findOne({ blogId });
+    const blog = await Blogs.findOne({ _id: blogId });
 
     res.json({
         status: 200,
         message: blog
     })
+});
+
+app.post('/comment', authorization, async (req, res) => {
+    const { blogId, description } = req.body;
+
+    const comment = new Comment();
+
+    comment.description = description;
+    comment.author = req.sender;
+
+    comment.save();
+
+    console.log(comment);
+
+    const query = await Blogs.findOneAndUpdate({ _id: blogId }, { 
+        $push: { 
+            comments: comment._id
+        }
+    });
+
+    console.log(query);
 })
+
+app.get('/comment/:blogId', async (req, res) => {
+    const blog = await Blogs.findOne({ _id: req.params.blogId });
+
+    let obj = [];
+    for(let i = 0; i < blog.comments.length; i++) {
+        const comment = await Comment.findOne({ _id: blog.comments[i] });
+        obj.push(comment);
+    }
+
+    res.json({
+        status: 200,
+        message: obj
+    })
+
+});
 
 app.post('/blogs', async (req, res) => {
     const data = [];

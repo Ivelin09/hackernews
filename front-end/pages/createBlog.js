@@ -32,8 +32,8 @@ export default function Page() {
     return (
         <div>
           <Head>
-            <link rel="stylesheet" href="/createBlog.css"></link>
             <link rel="stylesheet" href="/register.css"></link>
+            <link rel="stylesheet" href="/createBlog.css"></link>
           </Head>
             <Image src={bg} height={window.height} width={window.width}></Image>
             <div className="border">

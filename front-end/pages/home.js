@@ -1,7 +1,7 @@
 import Cookies from "cookies";
 import { useState, useEffect } from 'react'
 import useRequest from "../hooks/useFriendRequest";
-import Head from "next/head";
+import Head from "next/head"
 import {io} from "socket.io-client";
 
 export default function homePage({ token }) {
@@ -72,13 +72,12 @@ export default function homePage({ token }) {
     setUsername(event.target.value);
   }
 
-
+  console.log(friendList);
   return (
     <div className="" color="color: black">
-          <Head>
-            <link rel="stylesheet" href="/friends.css"></link>
-          </Head>
-
+        <Head>
+          <link rel="stylesheet" href="/friends.css"></link>
+        </Head>
       <div className="container">
         <div className="item-1">
           {message ? <p>{message}</p> : ""}
@@ -90,7 +89,7 @@ export default function homePage({ token }) {
         </div>
         <div className="item-2">
           <h2>friends</h2>
-            {friendList.map((item, idx) => <p key={idx}>{item}</p>)}
+          {friendList.map((item, idx) => <p key={idx}>{item}</p>)}
         </div>
         <div className="item-3">
           <h2> pending </h2>
@@ -103,7 +102,15 @@ export default function homePage({ token }) {
 }
 
 export async function getServerSideProps({ req, res }) {
-  const token = new Cookies(req, res).get("authorization") ?? "none";
+  const token = new Cookies(req, res).get("authorization") ?? null;
+
+  if(!token)
+    return {
+      redirect: {
+        destination: '/register',
+        permament: false
+      }
+    }
 
   return {
     props: { token },

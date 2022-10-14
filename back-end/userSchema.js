@@ -32,11 +32,31 @@ const userSchema = new Schema({
     friends: [{ type: Schema.Types.ObjectId, ref: 'Friends' }]
 });
 
+const comment = new Schema({
+    description: {
+        type: String,
+        required: true
+    },
+    author: {
+        type: Schema.Types.ObjectId,
+        ref: 'Users',
+        required: true
+    },
+    subComment: {
+        type: Schema.Types.ObjectId,
+        ref: 'Comment'
+    }
+})
+
 const blogSchema = new Schema({
     title: {
         type: String,
         required: true
     },
+    comments: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Comment',
+    }],
     description: {
         type: String,
         required: true
@@ -49,6 +69,7 @@ const blogSchema = new Schema({
 
 const User = mongoose.model('Users', userSchema);
 const Friend = mongoose.model('Friends', friendsSchema);
+const Comment = mongoose.model('Comment', comment);
 const Blogs = mongoose.model('Blog', blogSchema);
 
-module.exports = { User, Friend, Blogs, STATUS };
+module.exports = { User, Comment, Friend, Blogs, STATUS };

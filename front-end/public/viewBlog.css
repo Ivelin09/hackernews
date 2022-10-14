@@ -1,7 +1,32 @@
 body {
+    margin: 4%;
+}
+
+h1 {
     text-align: center;
 }
 
-.description {
-    border: 2px solid black;
+textarea {
+    width: 25%;
+    height: 8%;
+    padding: 12px 20px;
+    box-sizing: border-box;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    background-color: #f8f8f8;
+    resize: none;
+    display: inline;
+}
+
+button {
+    margin: 2%;
+    width: 10%;
+    height: 40px;
+    transform: translate(0%, -30%);
+}
+
+.container {
+    text-align: center;
+    border: 1px solid black;
+    background-color: grey;
 }
