@@ -42,6 +42,10 @@ const comment = new Schema({
         ref: 'Users',
         required: true
     },
+    blog: {
+        type: Schema.Types.ObjectId,
+        ref: 'Blog'
+    },
     subComment: {
         type: Schema.Types.ObjectId,
         ref: 'Comment'
@@ -53,10 +57,6 @@ const blogSchema = new Schema({
         type: String,
         required: true
     },
-    comments: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Comment',
-    }],
     description: {
         type: String,
         required: true

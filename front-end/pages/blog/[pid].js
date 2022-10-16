@@ -2,28 +2,23 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { useRef } from 'react';
 
-const recurse = async (comment, idx) => {
-  if(!comment.subComment)
-    return;
 
-    const response = await fetch("../api/comment", {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({  })
-    })
-
-  return (
-    <div>
-      <p>{comment.description}</p>
-      <p>Sub comment</p>
-      {recurse(comment.subComment)}
-    </div>
-  )
-}
-
-const Post = ({ blog }) => {
+const Post = ({ blog, comments }) => {
+  const recurse = async (comment) => {
+    if(!comment.subComment)
+      return <div></div>;
+  
+      console.log("here is a comment", comment.description);
+  
+    return (
+      <div>
+        <p>{comment.description}</p>
+        <p>Sub comment</p>
+        {recurse(comment.subComment)}
+      </div>
+    )
+  }
+  
   const comment = useRef();
 
   const handleSubmit = async () => {
@@ -51,6 +46,10 @@ const Post = ({ blog }) => {
         </div>
       </div>
       <p>Comments</p>
+      {comments.map((comment, idx) => {
+        console.log("cmt", recurse(comment));
+        return recurse(comment);
+      })}
       <textarea ref={comment} type="text"/> 
       <button onClick={handleSubmit}>Send</button>
       
@@ -71,21 +70,19 @@ export async function getServerSideProps(context) {
     body: JSON.stringify({blogId: id})
   }).then((res) => res.json());
 
-  const comments = await fetch(`http://localhost:3000/api/comments/${id}`, {
-    method: 'GET',
-    headers: {
-      "Content-Type": "application/json"
-    }
-  }).then((res) => res.json());
+  const commentData = await fetch(`http://localhost:3000/api/comments/${id}`, {
+    method: 'GET'
+  }).then((response) => { console.log(response); return response.json()});
+
+  const comments = commentData.message;
+  const blog = response.message;
 
   console.log(comments);
 
-  const blog = response.message;
-  console.log(blog);
-
   return {
     props: {
-      blog
+      blog,
+      comments
     }
   }
 }

@@ -246,21 +246,25 @@ app.post('/comment', authorization, async (req, res) => {
     comment.description = description;
     comment.author = req.sender;
 
-    comment.save();
+    comment.blog = blogId;
+
+    await comment.save();
 
     console.log(comment);
 
-    const query = await Blogs.findOneAndUpdate({ _id: blogId }, { 
+    /* const query = await Blogs.findOneAndUpdate({ _id: blogId }, { 
         $push: { 
             comments: comment._id
         }
-    });
+    }); */
 
-    console.log(query);
+    res.send({
+        status: 200
+    });
 })
 
-app.get('/comment/:blogId', async (req, res) => {
-    const blog = await Blogs.findOne({ _id: req.params.blogId });
+app.get('/comments/:blogId', async (req, res) => {
+    /*const blog = await Blogs.findOne({ _id: req.params.blogId });
 
     let obj = [];
     for(let i = 0; i < blog.comments.length; i++) {
@@ -268,9 +272,24 @@ app.get('/comment/:blogId', async (req, res) => {
         obj.push(comment);
     }
 
+    console.log(obj);*/
+
+    console.log('asd');
+
+    const query = await Blogs.aggregate([{
+        '$lookup': {
+            'from': "comments",
+            'localField': "_id",
+            'foreignField': "blog",
+            'as': "comments"
+        }
+    }]).exec();
+
+    console.log(JSON.stringify(query, null, 2));
+
     res.json({
         status: 200,
-        message: obj
+        message: query
     })
 
 });
