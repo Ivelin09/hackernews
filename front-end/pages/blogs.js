@@ -13,7 +13,7 @@ export default function Page({ blogs }) {
             <div className="blogs">
                 {blogs.map((blog, idx) =>  {
                     return (
-                    <div className="article">
+                    <div className="article" key={idx}>
                         <Link href={`/blog/post?id=${blog.id}`} key={idx}>{blog.title}</Link>
                         <p key={idx}>Author: {blog.author}</p>
                     </div>

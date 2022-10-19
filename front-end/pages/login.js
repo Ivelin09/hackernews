@@ -1,5 +1,6 @@
-import { Button } from '@mui/material'
-import { useState } from 'react'
+import { Button } from '@mui/material';
+import { useState } from 'react';
+import Head from 'next/head';
 
 export default function loginPage() {
     const [message, setMessage] = useState();
@@ -16,7 +17,7 @@ export default function loginPage() {
             headers: {
                 'Content-Type': 'application/json'
             }, 
-            method: 'POST',
+                method: 'POST',
             body: JSON.stringify(data),
         }).then((res) => res.json());
         console.log(response);
@@ -29,6 +30,9 @@ export default function loginPage() {
     }
     return (
         <div className="block">
+            <Head>
+                <link rel="stylesheet" href="/register.css"></link>
+            </Head>
             <form onSubmit={handleSubmit}>
                 {message ? <p className={isSuccess ? "success" : "failure"}>{message}</p> : ""}
                 <label htmlFor="first">Username</label>

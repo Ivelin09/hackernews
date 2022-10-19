@@ -239,53 +239,49 @@ app.post('/blog', async (req, res) => {
 });
 
 app.post('/comment', authorization, async (req, res) => {
-    const { blogId, description } = req.body;
+    const { id, description } = req.body;
 
     const comment = new Comment();
 
     comment.description = description;
-    comment.author = req.sender;
 
-    comment.blog = blogId;
+    comment.parent = id;
+
+    comment.author = req.sender.username
 
     await comment.save();
-
-    console.log(comment);
-
-    /* const query = await Blogs.findOneAndUpdate({ _id: blogId }, { 
-        $push: { 
-            comments: comment._id
-        }
-    }); */
 
     res.send({
         status: 200
     });
-})
+});
 
 app.get('/comments/:blogId', async (req, res) => {
-    /*const blog = await Blogs.findOne({ _id: req.params.blogId });
-
-    let obj = [];
-    for(let i = 0; i < blog.comments.length; i++) {
-        const comment = await Comment.findOne({ _id: blog.comments[i] });
-        obj.push(comment);
-    }
-
-    console.log(obj);*/
-
-    console.log('asd');
-
-    const query = await Blogs.aggregate([{
+    console.log(req.params.blogId);
+    const query = await Blogs.aggregate([
+        {
+            '$match': {
+                '$expr': {
+                    '$eq': [
+                        "$_id", {
+                            '$toObjectId': req.params.blogId
+                        }
+                    ]
+                }
+            }
+        },
+        {
         '$lookup': {
             'from': "comments",
             'localField': "_id",
-            'foreignField': "blog",
+            'foreignField': "parent",
             'as': "comments"
         }
-    }]).exec();
+    }]).exec().then((res) => res[0]);
 
-    console.log(JSON.stringify(query, null, 2));
+    console.log("HEREEE", JSON.stringify(query, null, 2)); 
+
+    console.log(query);
 
     res.json({
         status: 200,

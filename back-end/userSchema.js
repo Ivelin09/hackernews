@@ -33,18 +33,18 @@ const userSchema = new Schema({
 });
 
 const comment = new Schema({
+    author: {
+        type: String,
+        required: true
+    },
     description: {
         type: String,
         required: true
     },
-    author: {
+    parent: {
         type: Schema.Types.ObjectId,
-        ref: 'Users',
+        ref: "Blog",
         required: true
-    },
-    blog: {
-        type: Schema.Types.ObjectId,
-        ref: 'Blog'
     },
     subComment: {
         type: Schema.Types.ObjectId,
@@ -61,6 +61,10 @@ const blogSchema = new Schema({
         type: String,
         required: true
     },
+    comments: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Comment'
+    }],
     author: {
         type: Schema.Types.ObjectId, 
         ref: 'Users'
