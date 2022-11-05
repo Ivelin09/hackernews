@@ -12,16 +12,16 @@ export default function Home() {
         password: event.target.password.value
       };
 
-      const response = await fetch("/api/register", {
+      const response = fetch("/api/register", {
         method: 'POST',
         body: JSON.stringify(data),
         headers: {
           "Content-Type": "application/json"
-        },
-        credentials: 'include'
-      }).then((res) => res.json());
+        }
+      });
 
       setMessage(response.message);
+      
     }
     return (
       <div className="block">

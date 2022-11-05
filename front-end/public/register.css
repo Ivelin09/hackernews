@@ -3,6 +3,11 @@ body {
     text-align: center;
 }
 
+form {
+    border: 2px solid black;
+
+}
+
 .block form label {
     margin: 1%;
     display: block;

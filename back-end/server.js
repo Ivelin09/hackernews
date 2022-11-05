@@ -223,7 +223,7 @@ app.post('/createBlog', authorization, async (req, res) => {
     blog.description = description;
     blog.author = req.sender;
 
-    await blog.save();
+    console.log(await blog.save());
 
     res.sendStatus(200);
 })
@@ -254,6 +254,19 @@ app.post('/comment', authorization, async (req, res) => {
     res.send({
         status: 200
     });
+});
+
+app.get('/replies/:commentId', async (req, res) => {
+    console.log("I got here", req.params.commentId);
+    const query = await Comment.find({ parent: req.params.commentId });
+
+    console.log("reply", query);
+
+    res.send({
+        status: 200,
+        message: query
+    });
+
 });
 
 app.get('/comments/:blogId', async (req, res) => {
@@ -301,6 +314,8 @@ app.post('/blogs', async (req, res) => {
                 author: (await User.findOne({_id: blog.author})).username,
             });
         }));
+
+        console.log(blogs);
 
         res.json({
             status: 200,

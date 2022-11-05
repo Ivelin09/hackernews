@@ -2,39 +2,42 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { useEffect, useRef, useState} from 'react';
 
+const replies = async (comment, id) => {
+  console.log("qw");
+  const response = await fetch(`../api/replies/${id}`, {
+    method: 'GET'
+  }).then((res) => res.json());
+
+  comment.subComment = response.message;
+  console.log(response);
+}
+
+const Comment = ({blog, comment, idx}) => {
+  console.log(comment);
+  if(!comment) return;
+  const [showReplies, setReplies] = useState(false);
+  console.log("Ме");
+
+  return (
+    <div key={idx} style={{paddingLeft: 10}}className="author">
+      <h1>{comment.author}</h1>  
+      <p>{comment.description}</p>
+      <p onClick={async () => { if(showReplies) return; await replies(comment, comment._id); console.log(blog); setReplies(true) }}>View replies</p>
+      {showReplies && comment.subComment && 
+          comment.subComment.map((curr, subIdx) => {
+            console.log('HELP', curr, comment);
+            return <Comment blog={blog} comment={curr} idx={subIdx}/>;
+          })
+        }
+    </div>
+  )
+}
 
 const Post = ({ blog }) => {
-  const [depth, setDepth] = useState([]);
 
-  const handleReply = (idx) => {
-    setDepth((prev) => prev[idx]++);
-  }
+  
 
-  const recurse = (comment, level, idx) => {
-    console.log(comment, level, idx);
-    if(!comment || level == 0)
-      return (<div></div>);
-  
-    return (
-      <div key={idx} className="author">
-        <h1>{comment.author}</h1>  
-        <p>{comment.description}</p>
-        <p>Replies</p>
-        {recurse(comment.subComment, level-1, idx)}
-      </div>
-    )
-  }
-  
   const comment = useRef();
-
-  useEffect(() => {
-    const arr = [];
-    for(let i = 0; i < blog.comments.length; i++)
-      arr.push(2);
-    
-    arr[1] = 2;
-    setDepth(arr);
-  }, []);
 
   const handleSubmit = async () => {
     console.log(blog._id);
@@ -65,8 +68,7 @@ const Post = ({ blog }) => {
       <textarea ref={comment} type="text"/> 
       <button onClick={handleSubmit}>Send</button>
       {blog.comments.map((comment, idx) => {
-        console.log("depth", depth);
-        return recurse(comment, depth[idx], idx);
+        return <Comment blog={blog} comment={comment} idx={idx}/>
       })}
     </div>
   )
