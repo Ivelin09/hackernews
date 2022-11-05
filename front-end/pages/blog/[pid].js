@@ -12,17 +12,33 @@ const replies = async (comment, id) => {
   console.log(response);
 }
 
+const ReplyField = () => {
+  return (
+    <div>
+        <textarea type="text"/> 
+        <button >Send</button>
+    </div>
+  )
+}
+
 const Comment = ({blog, comment, idx}) => {
   console.log(comment);
   if(!comment) return;
   const [showReplies, setReplies] = useState(false);
-  console.log("Ме");
+  const [showReplyField, setReplyField] = useState(false);
+  
+  const handleSubmit = async () => {
+    await replies(comment, comment._id); 
+    setReplies(true);
+  } 
 
   return (
     <div key={idx} style={{paddingLeft: 10}}className="author">
       <h1>{comment.author}</h1>  
       <p>{comment.description}</p>
-      <p onClick={async () => { if(showReplies) return; await replies(comment, comment._id); console.log(blog); setReplies(true) }}>View replies</p>
+      <p onClick={handleSubmit} style={{display: 'inline'}} >View replies</p>
+      <p onClick={() => {setReplyField(true)}} style={{display: 'inline', paddingLeft: '1%'}}> Reply </p>
+      {showReplyField && <ReplyField/>}
       {showReplies && comment.subComment && 
           comment.subComment.map((curr, subIdx) => {
             console.log('HELP', curr, comment);
@@ -34,8 +50,6 @@ const Comment = ({blog, comment, idx}) => {
 }
 
 const Post = ({ blog }) => {
-
-  
 
   const comment = useRef();
 
@@ -65,7 +79,7 @@ const Post = ({ blog }) => {
         </div>
       </div>
       <p>Comments</p>
-      <textarea ref={comment} type="text"/> 
+      <textarea className="textarea" ref={comment} type="text"/> 
       <button onClick={handleSubmit}>Send</button>
       {blog.comments.map((comment, idx) => {
         return <Comment blog={blog} comment={comment} idx={idx}/>
