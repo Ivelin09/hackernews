@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { useEffect, useRef, useState} from 'react';
+import {io} from "socket.io-client";
 
 const replies = async (comment, id) => {
   console.log("qw");
@@ -12,16 +13,31 @@ const replies = async (comment, id) => {
   console.log(response);
 }
 
-const ReplyField = () => {
+const ReplyField = ({ parentId }) => {
+  const comment = useRef();
+
+  const handleSubmit = async () =>  {
+    const response = await fetch("../api/comment", {
+      method: "POST", 
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        id: parentId,
+        description: comment.current.value
+      })
+    });
+  }
+
   return (
     <div>
-        <textarea type="text"/> 
-        <button >Send</button>
+        <textarea className="reply" type="text" ref={comment}/> 
+        <button onClick={handleSubmit}>Send</button>
     </div>
   )
 }
 
-const Comment = ({blog, comment, idx}) => {
+const Comment = ({blog, comment}) => {
   console.log(comment);
   if(!comment) return;
   const [showReplies, setReplies] = useState(false);
@@ -33,16 +49,15 @@ const Comment = ({blog, comment, idx}) => {
   } 
 
   return (
-    <div key={idx} style={{paddingLeft: 10}}className="author">
+    <div style={{paddingLeft: 10}}className="author">
       <h1>{comment.author}</h1>  
       <p>{comment.description}</p>
       <p onClick={handleSubmit} style={{display: 'inline'}} >View replies</p>
       <p onClick={() => {setReplyField(true)}} style={{display: 'inline', paddingLeft: '1%'}}> Reply </p>
-      {showReplyField && <ReplyField/>}
+      {showReplyField && <ReplyField parentId={comment._id}/>}
       {showReplies && comment.subComment && 
           comment.subComment.map((curr, subIdx) => {
-            console.log('HELP', curr, comment);
-            return <Comment blog={blog} comment={curr} idx={subIdx}/>;
+            return <Comment key={subIdx} blog={blog} comment={curr} idx={subIdx}/>;
           })
         }
     </div>
@@ -82,7 +97,7 @@ const Post = ({ blog }) => {
       <textarea className="textarea" ref={comment} type="text"/> 
       <button onClick={handleSubmit}>Send</button>
       {blog.comments.map((comment, idx) => {
-        return <Comment blog={blog} comment={comment} idx={idx}/>
+        return <Comment key={idx} blog={blog} comment={comment} idx={idx}/>
       })}
     </div>
   )
