@@ -1,87 +1,61 @@
-import { useRouter } from 'next/router';
 import Head from 'next/head';
-import { useEffect, useRef, useState} from 'react';
-import {io} from "socket.io-client";
+import { useRef, useEffect, useState } from 'react';
+import io from "socket.io-client";
+import useComments  from '../../hooks/useComments';
+import { useRouter } from 'next/router';
 
-const replies = async (comment, id) => {
-  console.log("qw");
-  const response = await fetch(`../api/replies/${id}`, {
-    method: 'GET'
-  }).then((res) => res.json());
+const socket = io("http://localhost:8000");
 
-  comment.subComment = response.message;
-  console.log(response);
-}
+const Post = ({ blog, id }) => {
+  const { Comment, handleSubmit } = useComments();
+  const [typing, setTyper] = useState("");
+  useEffect(() => {
+    console.log(typing);
 
-const ReplyField = ({ parentId }) => {
-  const comment = useRef();
+    const connect = async () => {
+      console.log('connection')
+      socket.emit('connection', id);
+    }
 
-  const handleSubmit = async () =>  {
-    const response = await fetch("../api/comment", {
-      method: "POST", 
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        id: parentId,
-        description: comment.current.value
-      })
+    socket.on('typing', (data) => {
+      let arr = typing.split(", ");
+      console.log('data', arr, data, typing);
+      if(arr.find(el => el == data))
+        return;
+      if(typing != "")
+        setTyper((prev) => prev += `, ${data}`);
+      else
+        setTyper((prev) => { console.log('prev', prev); return prev += data + ' '});
+      
     });
-  }
 
-  return (
-    <div>
-        <textarea className="reply" type="text" ref={comment}/> 
-        <button onClick={handleSubmit}>Send</button>
-    </div>
-  )
-}
+    socket.on('stopTyping', (data) => {
+      console.log('data', data, typing.split(", "));
+      let arr = typing.split(", ").filter((el) => el != data);
+      console.log(arr.length == 0 ? "" : arr);
 
-const Comment = ({blog, comment}) => {
-  console.log(comment);
-  if(!comment) return;
-  const [showReplies, setReplies] = useState(false);
-  const [showReplyField, setReplyField] = useState(false);
-  
-  const handleSubmit = async () => {
-    await replies(comment, comment._id); 
-    setReplies(true);
-  } 
+      setTyper(() => arr.length == 0 ? "" : arr);
+    });
 
-  return (
-    <div style={{paddingLeft: 10}}className="author">
-      <h1>{comment.author}</h1>  
-      <p>{comment.description}</p>
-      <p onClick={handleSubmit} style={{display: 'inline'}} >View replies</p>
-      <p onClick={() => {setReplyField(true)}} style={{display: 'inline', paddingLeft: '1%'}}> Reply </p>
-      {showReplyField && <ReplyField parentId={comment._id}/>}
-      {showReplies && comment.subComment && 
-          comment.subComment.map((curr, subIdx) => {
-            return <Comment key={subIdx} blog={blog} comment={curr} idx={subIdx}/>;
-          })
-        }
-    </div>
-  )
-}
+    connect();
 
-const Post = ({ blog }) => {
+    return () => {
+      socket.off('typing');
+      socket.off('stopTyping');
+    };
+  }, []);
 
-  const comment = useRef();
+  const type = async (event) => {
+    const res = await fetch("../api/userId", {
+      method: 'GET'
+    }).then((res) => res.json());
 
-  const handleSubmit = async () => {
-    console.log(blog._id);
-    const response = await fetch("../api/comment", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        id: blog._id,
-        description: comment.current.value
-      })
+    socket.emit('typing', {
+      room: id,
+      user: res.message
     })
-    console.log(comment.current.value);
   }
+
   return (
     <div>
       <Head>
@@ -94,11 +68,12 @@ const Post = ({ blog }) => {
         </div>
       </div>
       <p>Comments</p>
-      <textarea className="textarea" ref={comment} type="text"/> 
+      <textarea className="textarea"  onChange={type} type="text"/> 
       <button onClick={handleSubmit}>Send</button>
+      {typing && (typing.split(", ").length == 1 ? <p style={{margin: '0%'}}>{typing} is typing</p> : <p>{typing} are typing</p>)}
       {blog.comments.map((comment, idx) => {
         return <Comment key={idx} blog={blog} comment={comment} idx={idx}/>
-      })}
+      })} 
     </div>
   )
 }
@@ -106,7 +81,6 @@ const Post = ({ blog }) => {
 export async function getServerSideProps(context) {
   const id = context.query.id;
   console.log(id);
-  console.log("HEREEE");
 
   const query = await fetch(`http://localhost:3000/api/comments/${id}`, {
     method: 'GET'
@@ -120,7 +94,8 @@ export async function getServerSideProps(context) {
 
   return {
     props: {
-      blog
+      blog,
+      id
     }
   }
 }

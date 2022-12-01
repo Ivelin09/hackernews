@@ -1,5 +1,6 @@
 import { Button } from '@mui/material';
 import { useState } from 'react';
+import Router from 'next/router';
 import Head from 'next/head';
 
 export default function loginPage() {
@@ -23,8 +24,13 @@ export default function loginPage() {
         console.log(response);
         if(response.code != 200)
             setStatus(false);
-        else
+        else {
+            Router.push({
+                pathname: '/blogs',
+                query: { success: true}
+            });
             setStatus(true);
+        }
         setMessage(response.message);
         console.log(isSuccess);
     }

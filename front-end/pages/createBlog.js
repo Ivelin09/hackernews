@@ -4,9 +4,12 @@ import bg from '../public/bg.jpg'
 import useWindow from '../hooks/backgroundImage';
 import Head from 'next/head'
 import { useState } from 'react';
+import { ColorPicker, useColor } from "react-color-palette";
+import "react-color-palette/lib/css/styles.css";
 
 export default function Page() {
     const window = useWindow();
+    const [color, setColor] = useColor("hex", "#121212");
     const [message, setMessage] = useState("");
 
     const handleSubmit = async (event) => {

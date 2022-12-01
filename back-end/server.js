@@ -25,8 +25,11 @@ const io = require('socket.io')(server, {
 
 const map = new Map();
 
+
 io.on("connection", (socket) => {
-    socket.on('connection', (data) => map.set(data, socket.id));
+    socket.on('connection', (room) => { console.log('room', room); socket.join(room) });
+    socket.on('typing', (data) => { console.log('data', data); io.to(data.room).emit('typing', data.user) });
+    socket.on('stopTyping', (data) => { console.log('data', data); io.to(data.room).emit('stopTyping', data.user) });
 });
 
 const { User, Comment, Friend, Blogs, STATUS } = require('./userSchema');
@@ -46,7 +49,7 @@ app.post('/register', async (req, res) => {
 
     console.log("username", username);
 
-    const token = await jwt.sign({username: username}, 'secret', {expiresIn: 1000*60*30 });
+    const token = await jwt.sign({username: username}, 'secret', {expiresIn: 1000*60*30*1000000000000000 });
     const doc = new User();
     doc.username = username;
     doc.password = password;
@@ -164,7 +167,7 @@ app.get('/userId', authorization, async (req ,res) => {
 
     res.json({
         status: 200,
-        message: req.sender._id.toString()
+        message: req.sender.username
     })
 });
 

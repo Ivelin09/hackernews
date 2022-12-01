@@ -20,6 +20,7 @@
     "net": "^1.0.2",
     "next": "^12.2.5",
     "react": "^18.2.0",
+    "react-color-palette": "^6.2.0",
     "react-dom": "^18.2.0",
     "socket.io-client": "^4.5.2",
     "webpack": "^5.74.0"

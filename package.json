@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "react-color-palette": "^6.2.0",
     "socket.io": "^4.5.2"
   }
 }
